@@ -5,7 +5,9 @@ This file is almost identical to: https://minisam.readthedocs.io/pose_graph_2d.h
 import minisam
 import numpy as np
 import math 
+from matplotlib import pyplot as plt
 
+# can be replaced by: from minisam import *; but `Explicit is better that implicit` 
 from minisam import FactorGraph, Variables
 from minisam import DiagonalLoss, PriorFactor, BetweenFactor
 from minisam import SE2, SO2, key
@@ -13,7 +15,7 @@ from minisam import LevenbergMarquardtOptimizer, LevenbergMarquardtOptimizerPara
 from minisam import MarginalCovarianceSolver, MarginalCovarianceSolverStatus
 from minisam import sophus
 
-import matplotlib.pyplot as plt
+from utility.minisam.visualisation import plotSE2WithCov
 
 
 def setup_graph():
@@ -96,25 +98,6 @@ def optimize(graph, initials):
     return results, mcov_solver
 
 
-# plot SE2 with covariance
-def plotSE2WithCov(pose, cov, vehicle_size=0.5, line_color='k', vehicle_color='r'):
-    # plot vehicle
-    p1 = pose.translation() + pose.so2() * np.array([1, 0]) * vehicle_size
-    p2 = pose.translation() + pose.so2() * np.array([-0.5, -0.5]) * vehicle_size
-    p3 = pose.translation() + pose.so2() * np.array([-0.5, 0.5]) * vehicle_size
-    line = plt.Polygon([p1, p2, p3], closed=True, fill=True, edgecolor=line_color, facecolor=vehicle_color)
-    plt.gca().add_line(line)
-    # plot cov
-    ps = []
-    circle_count = 50
-    for i in range(circle_count):
-        t = float(i) / float(circle_count) * math.pi * 2.0
-        cp = pose.translation() + np.matmul(cov[0:2, 0:2], np.array([math.cos(t), math.sin(t)]))
-        ps.append(cp)
-    line = plt.Polygon(ps, closed=True, fill=False, edgecolor=line_color)
-    plt.gca().add_line(line)
-
-
 def visualise(results, mcov_solver, nvert):
     fig, ax = plt.subplots()
     
@@ -134,8 +117,9 @@ def main():
 
     results, mcov_solver = optimize(graph, initials)
 
-    print(results[key('x', 1)].translation())
-    print(results[key('x', 1)].so2())
+    # Example usage:
+    # print(results[key('x', 1)].translation())
+    # print(results[key('x', 1)].so2())
 
     visualise(results, mcov_solver, 5)
 
